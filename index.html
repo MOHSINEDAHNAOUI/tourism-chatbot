@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatBot — Grand Palais Hotel</title>
+  <meta name="description" content="Votre concierge IA pour les hôtels et voyages au Maroc."/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Outfit', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'breathe':  'breathe 6s ease-in-out infinite',
+            'breathe2': 'breathe 6s ease-in-out 3s infinite',
+            'fadeUp':   'fadeUp 0.6s ease both',
+            'slideUp':  'slideUp 0.4s cubic-bezier(0.4,0,0.2,1)',
+            'bounce3':  'bounce3 1.2s ease-in-out infinite',
+            'pulse-green': 'pulseGreen 2s ease-in-out infinite',
+          },
+          keyframes: {
+            breathe:  { '0%,100%': { opacity:'0.07', transform:'scale(1)' }, '50%': { opacity:'0.13', transform:'scale(1.06)' } },
+            fadeUp:   { from:{ opacity:'0', transform:'translateY(20px)' }, to:{ opacity:'1', transform:'translateY(0)' } },
+            slideUp:  { from:{ opacity:'0', transform:'translateY(36px) scale(0.95)' }, to:{ opacity:'1', transform:'translateY(0) scale(1)' } },
+            bounce3:  { '0%,80%,100%':{ transform:'translateY(0)', opacity:'0.4' }, '40%':{ transform:'translateY(-6px)', opacity:'1' } },
+            pulseGreen:{ '0%,100%':{ opacity:'1' }, '50%':{ opacity:'0.4' } },
+          },
+          backdropBlur: { '3xl': '40px' },
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    /* Gradient text helper — not available as pure Tailwind utility */
+    .gradient-text {
+      background: linear-gradient(160deg, #1D1D1F 0%, #86868B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* Fluid font size for the hero title */
+    .title-fluid { font-size: clamp(72px, 18vw, 180px); }
+    /* Typing indicator dots */
+    .dot1 { animation: bounce3 1.2s ease-in-out infinite; }
+    .dot2 { animation: bounce3 1.2s ease-in-out 0.15s infinite; }
+    .dot3 { animation: bounce3 1.2s ease-in-out 0.3s infinite; }
+    @keyframes bounce3 {
+      0%,80%,100% { transform:translateY(0); opacity:0.4; }
+      40%         { transform:translateY(-6px); opacity:1; }
+    }
+  </style>
+</head>
+<body class="font-sans bg-[#F5F5F7] text-[#1D1D1F] overflow-hidden h-screen antialiased">
+
+  <!-- ── Ambient blobs ── -->
+  <div class="pointer-events-none fixed inset-0 overflow-hidden">
+    <div class="animate-breathe absolute -top-32 -left-40 w-[600px] h-[600px] rounded-full"
+         style="background:radial-gradient(circle,rgba(0,113,227,0.1) 0%,transparent 70%)"></div>
+    <div class="animate-breathe2 absolute -bottom-24 -right-32 w-[500px] h-[500px] rounded-full"
+         style="background:radial-gradient(circle,rgba(192,98,58,0.08) 0%,transparent 70%)"></div>
+  </div>
+
+  <!-- ── Full-page Hero ── -->
+  <main class="relative z-10 h-screen flex flex-col items-center justify-center text-center px-6">
+    <!-- Badge -->
+    <div class="animate-fadeUp [animation-delay:0.1s] opacity-0
+                inline-block bg-blue-50 text-blue-600
+                text-[11px] font-semibold tracking-widest uppercase
+                px-4 py-2 rounded-full mb-6">
+      Grand Palais Hotel
+    </div>
+
+    <!-- Giant Title -->
+    <h1 class="font-display font-black title-fluid gradient-text
+               leading-none tracking-tighter
+               animate-fadeUp [animation-delay:0.2s] opacity-0 mb-6">
+      ChatBot
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="animate-fadeUp [animation-delay:0.35s] opacity-0
+              text-lg text-[#86868B] font-light max-w-md leading-relaxed">
+      Posez vos questions sur nos hôtels, réservations<br class="hidden sm:block"/>et destinations au Maroc.
+    </p>
+  </main>
+
+  <!-- ── Floating Chat Button ── -->
+  <button onclick="toggleChat()" id="concierge-btn"
+          class="fixed bottom-9 right-9 z-50
+                 w-14 h-14 rounded-full
+                 bg-[#1D1D1F] text-white text-2xl
+                 flex items-center justify-center
+                 shadow-2xl
+                 transition-all duration-300 hover:scale-110 hover:shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+    <span id="concierge-icon">💬</span>
+  </button>
+
+  <!-- ── Chat Panel ── -->
+  <div id="chat-panel"
+       class="hidden fixed z-40
+              bottom-[7.5rem] right-9
+              w-[380px] h-[560px]
+              flex-col
+              bg-white/90 backdrop-blur-3xl
+              border border-black/10
+              rounded-3xl overflow-hidden
+              shadow-[0_20px_60px_rgba(0,0,0,0.14)]">
+
+    <!-- Panel Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-black/[0.07]">
+      <div class="flex items-center gap-3">
+        <img src="hotel_logo.png" alt=""
+             class="w-9 h-9 rounded-xl object-cover"
+             onerror="this.classList.add('hidden'); document.getElementById('logo-fallback').classList.remove('hidden')"/>
+        <div id="logo-fallback"
+             class="hidden w-9 h-9 rounded-xl bg-[#1D1D1F] text-white text-sm flex items-center justify-center">
+          ✦
+        </div>
+        <div>
+          <h3 class="font-semibold text-[15px] font-display leading-tight">Grand Palais Hotel</h3>
+          <div class="flex items-center gap-1.5 text-[11px] text-[#86868B] mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse-green inline-block"></span>
+            En ligne
+          </div>
+        </div>
+      </div>
+      <button onclick="toggleChat()"
+              class="w-7 h-7 rounded-full bg-black/5 hover:bg-black/10 text-xs flex items-center justify-center transition-all">
+        ✕
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="messages"
+         class="flex-1 overflow-y-auto flex flex-col gap-2.5 p-4
+                scrollbar-thin scroll-smooth">
+    </div>
+
+    <!-- Input -->
+    <div class="flex items-center gap-2.5 px-4 py-3.5 border-t border-black/[0.07]">
+      <input id="chat-input" type="text"
+             placeholder="Posez votre question..."
+             onkeydown="handleChatKey(event)"
+             class="flex-1 bg-[#F5F5F7] border border-black/10 rounded-full
+                    px-4 py-2.5 text-sm outline-none
+                    focus:border-[#1D1D1F] focus:bg-white
+                    placeholder:text-[#86868B]
+                    transition-all duration-200"/>
+      <button id="send-btn" onclick="sendChat()"
+              class="w-[38px] h-[38px] flex-shrink-0 rounded-full
+                     bg-[#1D1D1F] text-white flex items-center justify-center
+                     hover:opacity-85 hover:scale-105
+                     disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none
+                     transition-all duration-200">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
